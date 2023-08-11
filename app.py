@@ -15,13 +15,13 @@ def ask_api(
     if not lcserve_host.startswith('http'):
         return '[ERROR]: Invalid API Host'
 
-    if url.strip() == '' and file == None:
+    if not url.strip() and file is None:
         return '[ERROR]: Both URL and PDF is empty. Provide at least one.'
 
     if url.strip() != '' and file != None:
         return '[ERROR]: Both URL and PDF is provided. Please provide only one (either URL or PDF).'
 
-    if question.strip() == '':
+    if not question.strip():
         return '[ERROR]: Question field is empty'
 
     _data = {
@@ -31,19 +31,19 @@ def ask_api(
         },
     }
 
-    if url.strip() != '':
-        r = requests.post(
-            f'{lcserve_host}/ask_url',
-            json={'url': url, **_data},
-        )
-
-    else:
+    if not url.strip():
         with open(file.name, 'rb') as f:
             r = requests.post(
                 f'{lcserve_host}/ask_file',
                 params={'input_data': json.dumps(_data)},
                 files={'file': f},
             )
+
+    else:
+        r = requests.post(
+            f'{lcserve_host}/ask_url',
+            json={'url': url, **_data},
+        )
 
     if r.status_code != 200:
         raise ValueError(f'[ERROR]: {r.text}')
