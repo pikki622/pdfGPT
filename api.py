@@ -60,7 +60,7 @@ def text_to_chunks(texts, word_length=150, start_page=1):
                 text_toks[idx + 1] = chunk + text_toks[idx + 1]
                 continue
             chunk = ' '.join(chunk).strip()
-            chunk = f'[Page no. {idx+start_page}]' + ' ' + '"' + chunk + '"'
+            chunk = f'[Page no. {idx + start_page}] "{chunk}"'
             chunks.append(chunk)
     return chunks
 
@@ -82,10 +82,7 @@ class SemanticSearch:
         inp_emb = self.use([text])
         neighbors = self.nn.kneighbors(inp_emb, return_distance=False)[0]
 
-        if return_data:
-            return [self.data[i] for i in neighbors]
-        else:
-            return neighbors
+        return [self.data[i] for i in neighbors] if return_data else neighbors
 
     def get_text_embedding(self, texts, batch=1000):
         embeddings = []
@@ -93,8 +90,7 @@ class SemanticSearch:
             text_batch = texts[i : (i + batch)]
             emb_batch = self.use(text_batch)
             embeddings.append(emb_batch)
-        embeddings = np.vstack(embeddings)
-        return embeddings
+        return np.vstack(embeddings)
 
 
 def load_recommender(path, start_page=1):
@@ -127,8 +123,7 @@ def generate_text(openAI_key, prompt, engine="text-davinci-003"):
 
 def generate_answer(question, openAI_key):
     topn_chunks = recommender(question)
-    prompt = ""
-    prompt += 'search results:\n\n'
+    prompt = "" + 'search results:\n\n'
     for c in topn_chunks:
         prompt += c + '\n\n'
 
@@ -144,8 +139,7 @@ def generate_answer(question, openAI_key):
     )
 
     prompt += f"Query: {question}\nAnswer:"
-    answer = generate_text(openAI_key, prompt, "text-davinci-003")
-    return answer
+    return generate_text(openAI_key, prompt, "text-davinci-003")
 
 
 def load_openai_key() -> str:
